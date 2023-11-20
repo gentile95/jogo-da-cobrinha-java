@@ -9,6 +9,8 @@ import java.awt.event.KeyListener;
 import java.util.ArrayList;
 import java.util.Random;
 
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 
@@ -43,6 +45,7 @@ public class SnakeGame extends JPanel implements ActionListener, KeyListener {
     int velocityX;
     int velocityY;
     boolean gameOver = false;
+    int highestScore = 0;
 
     SnakeGame(int boardwidth, int boardHeight) {
         this.boardwidth = boardwidth;
@@ -98,11 +101,18 @@ public class SnakeGame extends JPanel implements ActionListener, KeyListener {
         }
 
         // PONTUAÇÃO
+        if (highestScore < snakeBody.size()) {
+            highestScore = snakeBody.size();
+        }
+
         g.setFont(new Font("Verdana",Font.PLAIN, 14));
+        g.setColor(Color.yellow);
+        g.drawString("Recorde: " + String.valueOf(highestScore), boardwidth - 100, tileSize - 7);
         if (gameOver) {
             g.setColor(Color.red);
             g.drawString("Fim de Jogo - Pontuação: " + String.valueOf(snakeBody.size()), tileSize - 20, tileSize - 7);
         } else {
+            g.setColor(Color.yellow);
             g.drawString("Pontuação: " + String.valueOf(snakeBody.size()), tileSize - 20, tileSize - 7);
         }
     } 
@@ -150,12 +160,32 @@ public class SnakeGame extends JPanel implements ActionListener, KeyListener {
             // COLIDIR CABEÇA COM O CORPO
             if (collision(snakeHead, snakePart)) {
                 gameOver = true;
+                showGameOver();
             }
         }
 
         if (snakeHead.x * tileSize < 0 || snakeHead.x * tileSize > boardwidth || 
             snakeHead.y * tileSize < 0 || snakeHead.y * tileSize > boardHeight) {
             gameOver = true;
+            showGameOver();
+        }
+    }
+
+    public void showGameOver() {
+        Object[] options = {"Reiniciar"};
+        JFrame frame = new JFrame();
+        int result = JOptionPane.showOptionDialog(this.getRootPane(), "Fim de Jogo! Deseja Reiniciar?",
+                    "Fim de Jogo!", JOptionPane.PLAIN_MESSAGE, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        if (result == JOptionPane.YES_OPTION) {
+            gameOver = false;
+            snakeBody.clear();
+            snakeHead = new Tile(5, 5);
+            placeFood();
+            gameLoop.restart();
+        } else {
+            System.exit(0);
         }
     }
 
